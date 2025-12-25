@@ -3,58 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LaunchPad Network | Launch. Build. Grow.</title>
+    <title>LaunchPad Network | Protocol Initiated</title>
     <meta name="description" content="Launch skills. Build income. Grow steadily. Resources for independent operators.">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 
-    <!-- CSS STYLES -->
     <style>
-        /* --- Core Variables & Reset --- */
+        /* --- Core Variables --- */
         :root {
             --bg-color: #050505;
             --text-primary: #ffffff;
             --text-secondary: #a0a0a0;
             --accent-color: #4f7eff;
+            --accent-success: #4ade80;
+            --accent-error: #f87171;
             --accent-glow: rgba(79, 126, 255, 0.4);
-            /* Liquid Glass Effect Variables */
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-blur: 16px;
+            
+            --glass-bg: rgba(255, 255, 255, 0.02);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --glass-blur: 20px;
+            
             --font-main: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        
         body {
             background-color: var(--bg-color);
             color: var(--text-primary);
             font-family: var(--font-main);
             overflow-x: hidden;
             line-height: 1.6;
-            margin: 0;
+            cursor: default; /* Custom cursor defined later */
         }
 
-        /* --- 3D Background Canvas --- */
-        #canvas-container {
+        /* --- FEATURE 1: PRELOADER --- */
+        #preloader {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+        .loader-text {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            letter-spacing: 2px;
+            margin-top: 15px;
+            text-transform: uppercase;
+            animation: pulse 1.5s infinite;
+        }
+        .loader-bar {
+            width: 150px;
+            height: 2px;
+            background: rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .loader-bar::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; height: 100%; width: 0%;
+            background: var(--accent-color);
+            animation: loadProgress 2s ease-in-out forwards;
+        }
+
+        /* --- Backgrounds & Cursor --- */
+        #canvas-container {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: -1;
-            background: radial-gradient(circle at center, #0a0a1a 0%, #000000 100%);
+            background: radial-gradient(circle at center, #0b0b1e 0%, #000000 100%);
+        }
+
+        /* Feature 3: Mouse Glow Follower */
+        #cursor-glow {
+            position: fixed;
+            top: 0; left: 0;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(79, 126, 255, 0.07) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 0;
+            transition: opacity 0.5s ease;
         }
 
         /* --- Layout --- */
@@ -62,382 +102,339 @@
             position: relative;
             z-index: 1;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 0 auto;
             padding: 20px;
-            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            gap: 100px; /* Space between sections */
         }
 
-        /* --- Liquid Glass Panels --- */
+        /* --- Glassmorphism Shared --- */
         .glass-panel {
             background: var(--glass-bg);
             backdrop-filter: blur(var(--glass-blur));
             -webkit-backdrop-filter: blur(var(--glass-blur));
             border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
-                        box-shadow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                        border-color 0.3s ease;
+            border-radius: 24px;
+            padding: 50px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+            transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
         }
-
         .glass-panel:hover {
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7);
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
         }
 
-        /* --- Hero Section --- */
+        /* --- Hero --- */
         .hero {
-            flex-grow: 1;
+            min-height: 90vh;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 60px 0;
         }
-
         .hero-content {
-            max-width: 700px; /* Slightly wider for new text */
-            animation: fadeIn 1.2s ease-out;
+            opacity: 0; /* Handled by JS fade in */
+            transform: translateY(20px);
+            transition: opacity 1s ease 0.5s, transform 1s ease 0.5s;
+        }
+        .hero-content.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .brand-name {
-            font-size: 3.5rem;
-            font-weight: 600;
+            font-size: 4rem;
+            font-weight: 700;
             letter-spacing: -2px;
-            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            background: linear-gradient(135deg, #ffffff 20%, #818cf8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            color: white; 
-            margin-bottom: 10px;
-            text-shadow: 0 0 30px rgba(79, 126, 255, 0.2);
+            margin-bottom: 15px;
         }
-
         .tagline {
-            font-size: 1.25rem;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
             color: var(--accent-color);
-            font-weight: 400;
-            margin-bottom: 25px;
-            letter-spacing: 0.5px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
         }
-
-        .separator {
-            height: 1px;
-            width: 60px;
-            background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
-            margin: 0 auto 25px auto;
-        }
-
         .description {
             color: var(--text-secondary);
-            margin-bottom: 40px;
-            font-size: 1rem;
-            max-width: 90%;
-            margin-left: auto;
-            margin-right: auto;
-            text-align: justify;
-            text-align-last: center; /* Centers the last line */
+            font-size: 1.1rem;
+            max-width: 650px;
+            margin: 0 auto 40px auto;
+            line-height: 1.8;
         }
 
         .cta-button {
-            display: inline-block;
-            padding: 14px 35px;
-            background: rgba(255, 255, 255, 0.05);
+            padding: 16px 40px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.08) 100%);
             color: white;
-            text-decoration: none;
-            border: 1px solid var(--accent-color);
+            border: 1px solid var(--glass-border);
             border-radius: 50px;
             font-weight: 600;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 1.5px;
-            cursor: pointer;
-        }
-
-        .cta-button:hover {
-            background: var(--accent-color);
-            box-shadow: 0 0 25px var(--accent-glow);
-            transform: translateY(-2px);
-        }
-
-        /* --- Registration Section --- */
-        .registration {
-            display: none; 
-            justify-content: center;
-            align-items: center;
-            padding: 60px 0;
-            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .form-container {
-            width: 100%;
-            max-width: 550px;
-        }
-
-        .form-container h2 {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            text-align: center;
-            color: white;
-        }
-
-        .form-intro {
-            text-align: center;
-            color: var(--text-secondary);
-            margin-bottom: 30px;
             font-size: 0.9rem;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            margin-left: 4px;
-        }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="tel"],
-        select {
-            width: 100%;
-            padding: 14px 18px;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--glass-border);
-            border-radius: 10px;
-            color: white;
-            font-family: var(--font-main);
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.3s;
-        }
-
-        input:focus, select:focus {
-            border-color: var(--accent-color);
-            background: rgba(0, 0, 0, 0.4);
-            box-shadow: 0 0 0 2px rgba(79, 126, 255, 0.1);
-        }
-
-        /* Track Description Box */
-        #track-info-box {
-            margin-top: 10px;
-            padding: 12px 15px;
-            background: rgba(79, 126, 255, 0.08);
-            border-left: 3px solid var(--accent-color);
-            border-radius: 0 8px 8px 0;
-            color: #dbeafe;
-            font-size: 0.85rem;
-            display: none; /* Hidden until selected */
-            animation: fadeIn 0.3s ease;
-        }
-
-        /* Custom Select Arrow */
-        .select-wrapper {
-            position: relative;
-        }
-        .select-wrapper::after {
-            content: '▼';
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            position: absolute;
-            right: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-        }
-        select {
-            appearance: none;
-            cursor: pointer;
-        }
-        select option {
-            background-color: #0a0a0a;
-            color: white;
-            padding: 10px;
-        }
-
-        /* Range Slider */
-        .range-container {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            background: rgba(0,0,0,0.2);
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid var(--glass-border);
-        }
-
-        input[type=range] {
-            -webkit-appearance: none;
-            width: 100%;
-            background: transparent;
-            padding: 0;
-            border: none;
-        }
-
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 18px;
-            width: 18px;
-            border-radius: 50%;
-            background: var(--accent-color);
-            cursor: pointer;
-            margin-top: -7px;
-            box-shadow: 0 0 10px var(--accent-glow);
-            transition: transform 0.1s;
-        }
-        input[type=range]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 4px;
-            cursor: pointer;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
-        }
-
-        #profit-value {
-            font-weight: 600;
-            color: var(--accent-color);
-            min-width: 45px;
-            text-align: right;
-            font-size: 1.1rem;
-        }
-
-        /* Checkbox */
-        .checkbox-group {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 30px;
-            background: rgba(79, 126, 255, 0.05);
-            padding: 15px;
-            border-radius: 10px;
-        }
-
-        .checkbox-group input {
-            margin-top: 4px;
-            accent-color: var(--accent-color);
-            width: 18px;
-            height: 18px;
-        }
-
-        .checkbox-group label {
-            font-size: 0.85rem;
-            color: #d0d0d0;
-            line-height: 1.5;
-            cursor: pointer;
-        }
-
-        /* Submit Button */
-        .submit-button {
-            width: 100%;
-            padding: 16px;
-            background: white;
-            color: black;
-            border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-button:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 30px var(--accent-glow);
+            text-shadow: 0 0 8px rgba(255,255,255,0.5);
         }
 
+        /* --- FEATURE 2: BRIEFING MODULE (FAQ) --- */
+        .briefing-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .section-title {
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            opacity: 0.7;
+        }
+        .accordion {
+            width: 100%;
+            max-width: 700px;
+        }
+        .accordion-item {
+            border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 10px;
+        }
+        .accordion-header {
+            width: 100%;
+            padding: 20px 0;
+            background: transparent;
+            border: none;
+            color: white;
+            text-align: left;
+            font-size: 1.1rem;
+            font-family: var(--font-main);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            opacity: 0.9;
+            transition: opacity 0.3s;
+        }
+        .accordion-header:hover { opacity: 1; color: var(--accent-color); }
+        .accordion-header::after {
+            content: '+';
+            font-size: 1.2rem;
+            font-weight: 300;
+            transition: transform 0.3s;
+        }
+        .accordion-header.active::after { transform: rotate(45deg); }
+        .accordion-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .accordion-body p { padding-bottom: 20px; }
+
+        /* --- Registration --- */
+        .registration {
+            display: none; /* Hidden initially */
+            justify-content: center;
+            padding-bottom: 80px;
+            animation: slideUpFade 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .form-container { width: 100%; max-width: 600px; }
+        .form-container h2 {
+            font-size: 2rem; margin-bottom: 10px; text-align: center; color: white;
+        }
+        .form-intro {
+            text-align: center; color: var(--text-secondary); margin-bottom: 40px; font-size: 0.95rem;
+        }
+
+        /* Form Fields */
+        .input-group { margin-bottom: 25px; position: relative; }
+        .input-group label {
+            display: block; font-size: 0.8rem; color: var(--text-secondary);
+            margin-bottom: 8px; margin-left: 5px; font-weight: 500;
+        }
+        
+        /* FEATURE 4: Live Validation Styles */
+        input, select {
+            width: 100%; padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: white; font-family: var(--font-main); font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus {
+            background: rgba(0,0,0,0.5);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(79, 126, 255, 0.1);
+        }
+        /* Valid/Invalid States */
+        input.valid { border-color: var(--accent-success); }
+        input.invalid { border-color: var(--accent-error); }
+
+        /* Track Info Box */
+        #track-info-box {
+            margin-top: 15px; padding: 15px 20px;
+            background: rgba(79, 126, 255, 0.1);
+            border: 1px solid rgba(79, 126, 255, 0.2);
+            border-radius: 12px;
+            color: #e0e7ff; font-size: 0.9rem; line-height: 1.5;
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        /* Slider */
+        .range-container {
+            display: flex; align-items: center; gap: 20px;
+            background: rgba(0,0,0,0.3); padding: 20px;
+            border-radius: 12px; border: 1px solid var(--glass-border);
+        }
+        input[type=range] { padding: 0; background: transparent; border: none; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 20px; width: 20px;
+            border-radius: 50%; background: var(--accent-color);
+            cursor: pointer; margin-top: -8px;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px;
+        }
+        #profit-value {
+            font-family: var(--font-mono); font-size: 1.2rem;
+            color: var(--accent-color); font-weight: 700;
+        }
+
+        /* Checkbox & Submit */
+        .checkbox-group {
+            display: flex; align-items: flex-start; gap: 15px;
+            margin-bottom: 30px; padding: 20px;
+            background: rgba(255,255,255,0.02); border-radius: 12px;
+        }
+        .checkbox-group input { width: 20px; height: 20px; accent-color: var(--accent-color); margin-top: 2px; }
+        
+        .submit-button {
+            width: 100%; padding: 18px;
+            background: white; color: black;
+            border: none; border-radius: 12px;
+            font-weight: 700; font-size: 1rem;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
         .submit-button:hover {
-            background: #f0f0f0;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255,255,255,0.1);
-        }
-
-        .submit-button:active {
-            transform: translateY(0);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255,255,255,0.15);
         }
 
         /* Footer */
         footer {
-            text-align: center;
-            padding: 40px 0 20px 0;
-            color: rgba(255, 255, 255, 0.2);
-            font-size: 0.8rem;
+            text-align: center; padding: 40px;
+            color: var(--text-secondary); font-size: 0.8rem; opacity: 0.6;
         }
 
-        /* Status Messages */
-        .status-message {
-            margin-top: 20px;
-            font-size: 0.9rem;
-            text-align: center;
-            min-height: 1.5em;
-            font-weight: 500;
-        }
-        .success { color: #4ade80; }
-        .error { color: #f87171; }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Responsive */
+        /* Utilities & Animations */
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        @keyframes loadProgress { 0% { width: 0%; } 100% { width: 100%; } }
+        @keyframes slideUpFade { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .hidden { display: none !important; }
+        
         @media (max-width: 768px) {
             .brand-name { font-size: 2.5rem; }
-            .glass-panel { padding: 25px; }
-            .hero-content { width: 100%; }
+            .glass-panel { padding: 30px 20px; }
+            main { gap: 60px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 3D Canvas Container -->
+    <!-- FEATURE 1: PRELOADER -->
+    <div id="preloader">
+        <div class="loader-bar"></div>
+        <div class="loader-text">Initializing Uplink...</div>
+    </div>
+
+    <!-- FEATURE 3: MOUSE GLOW -->
+    <div id="cursor-glow"></div>
+
     <div id="canvas-container"></div>
 
-    <!-- Main Content -->
     <main>
         <!-- Hero Section -->
         <section class="hero">
-            <div class="glass-panel hero-content">
-                <h1 class="brand-name">LaunchPad Network</h1>
-                <p class="tagline">Launch skills. Build income. Grow steadily.</p>
-                <div class="separator"></div>
-                <!-- Updated Short Program Explanation -->
-                <p class="description">
-                    LaunchPad Network is a curated program that helps motivated individuals turn practical skills into real-world projects. We provide a structured learning environment and starting support so participants can build and grow independently at their own pace. The program is selective and focused on long-term, skill-based value creation.
-                </p>
-                <!-- Button to reveal form -->
-                <button id="register-btn" class="cta-button">Initialize Registration</button>
+            <div class="hero-content">
+                <div class="glass-panel">
+                    <h1 class="brand-name">LaunchPad Network</h1>
+                    <p class="tagline">Launch. Build. Grow. Sustain.</p>
+                    <p class="description">
+                        LaunchPad Network is a curated program that helps motivated individuals turn practical skills into real-world projects. We provide a structured learning environment and starting support so participants can build and grow independently at their own pace.
+                    </p>
+                    <button id="register-btn" class="cta-button">Initialize Registration Protocol</button>
+                </div>
             </div>
         </section>
 
-        <!-- Registration Section (Hidden by default) -->
+        <!-- FEATURE 2: BRIEFING MODULE (FAQ) -->
+        <section id="briefing" class="briefing-section">
+            <div class="section-title">// Mission Briefing</div>
+            <div class="accordion">
+                <!-- Item 1 -->
+                <div class="glass-panel accordion-item">
+                    <button class="accordion-header">
+                        Is technical experience required?
+                    </button>
+                    <div class="accordion-body">
+                        <p>No prior experience is mandated. We provide the structural resources and pathways. However, a high level of drive, self-discipline, and the ability to learn independently are absolute requirements.</p>
+                    </div>
+                </div>
+                <!-- Item 2 -->
+                <div class="glass-panel accordion-item">
+                    <button class="accordion-header">
+                        What is the time commitment?
+                    </button>
+                    <div class="accordion-body">
+                        <p>This is an independent operation. You set your pace. However, consistent input yields consistent output. We recommend a minimum of 5-10 hours per week to see tangible momentum.</p>
+                    </div>
+                </div>
+                <!-- Item 3 -->
+                <div class="glass-panel accordion-item">
+                    <button class="accordion-header">
+                        Are there upfront costs?
+                    </button>
+                    <div class="accordion-body">
+                        <p>No. LaunchPad Network operates on a profit-share model. We only succeed when you generate revenue. This aligns our incentives with your growth.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Registration Section -->
         <section id="register" class="registration">
             <div class="glass-panel form-container">
                 <h2>Operator Registration</h2>
-                <p class="form-intro">Configure your track and confirm terms.</p>
+                <p class="form-intro">Configure your parameters. Secure your spot.</p>
                 
                 <form id="launchForm" action="https://formspree.io/f/xeejwrgz" method="POST">
                     
-                    <!-- Identity -->
                     <div class="input-group">
                         <label for="name">Full Name</label>
-                        <input type="text" id="name" name="name" required placeholder="Enter your legal name">
+                        <input type="text" id="name" name="name" required placeholder="e.g. John Doe">
                     </div>
 
                     <div class="input-group">
@@ -450,270 +447,252 @@
                         <input type="tel" id="whatsapp" name="whatsapp" required placeholder="+1 (555) 000-0000">
                     </div>
 
-                    <!-- Track Selection -->
                     <div class="input-group">
                         <label for="track">Select Track</label>
                         <div class="select-wrapper">
                             <select id="track" name="track" required>
-                                <option value="" disabled selected>Choose your pathway...</option>
+                                <option value="" disabled selected>Select pathway...</option>
                                 <option value="n8n Automation">n8n Automation</option>
                                 <option value="YouTube Content">YouTube Content Creation</option>
                                 <option value="Digital Product Sales">Digital Product Sales</option>
                             </select>
                         </div>
-                        <!-- Dynamic Track Explanation Box -->
                         <div id="track-info-box"></div>
                     </div>
 
-                    <!-- Profit Share Slider -->
                     <div class="input-group">
-                        <label for="profit-share">Your Agreed Profit Share (%)</label>
+                        <label for="profit-share">Agreed Profit Share (%)</label>
                         <div class="range-container">
                             <input type="range" id="profit-share" name="profit_share" min="10" max="60" step="1" value="10">
                             <span id="profit-value">10%</span>
                         </div>
                     </div>
 
-                    <!-- Agreement -->
                     <div class="input-group">
                         <label for="signature">Digital Signature</label>
-                        <input type="text" id="signature" name="signature" required placeholder="Type full name to sign">
+                        <input type="text" id="signature" name="signature" required placeholder="Type full name">
                     </div>
 
                     <div class="checkbox-group">
                         <input type="checkbox" id="agreement" name="agreement" required>
                         <label for="agreement">
-                            I confirm that I understand this program provides only resources and guidance. 
-                            I operate independently, take responsibility for my actions, and agree to the 
-                            stated profit share from profit only.
+                            I confirm understanding that this is a resource-provider program. I operate independently and agree to the stated profit share upon revenue generation.
                         </label>
                     </div>
 
-                    <!-- Submit -->
                     <button type="submit" class="submit-button">Confirm & Launch</button>
-                    
-                    <!-- Status Messages -->
-                    <p id="form-status" class="status-message"></p>
+                    <p id="form-status" style="margin-top:15px; text-align:center; font-size:0.9rem;"></p>
                 </form>
             </div>
         </section>
 
-        <!-- Footer -->
         <footer>
-            <p>&copy; 2025 LaunchPad Network. Independent Operations.</p>
+            <p>&copy; 2025 LaunchPad Network. Independent Operations. | System V2.0</p>
         </footer>
     </main>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- JS MODULES -->
     <script type="module">
         import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
-        /* --- 1. 3D Background Logic (Three.js) --- */
+        /* --- 1. SYSTEM INITIALIZATION (Preloader) --- */
+        window.addEventListener('load', () => {
+            const preloader = document.getElementById('preloader');
+            const heroContent = document.querySelector('.hero-content');
+            
+            // Artificial delay to show the animation (2 seconds)
+            setTimeout(() => {
+                preloader.style.opacity = '0';
+                preloader.style.visibility = 'hidden';
+                
+                // Trigger Hero Animation
+                setTimeout(() => {
+                    heroContent.classList.add('visible');
+                }, 300);
+            }, 2000);
+        });
+
+        /* --- 2. 3D ENVIRONMENT --- */
         const initScene = () => {
             const container = document.getElementById('canvas-container');
-            
-            // Scene & Fog
             const scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x050505, 0.0025);
+            scene.fog = new THREE.FogExp2(0x050505, 0.002);
 
-            // Camera
-            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 30;
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+            camera.position.z = 35;
 
-            // Renderer
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             container.appendChild(renderer.domElement);
 
-            // --- Geometries ---
-            
-            // A. Main Icosahedron
-            const geometry = new THREE.IcosahedronGeometry(12, 1);
+            // Geometry: Network Sphere
+            const geometry = new THREE.IcosahedronGeometry(13, 1);
             const material = new THREE.MeshBasicMaterial({ 
-                color: 0x4f7eff, 
-                wireframe: true, 
-                transparent: true, 
-                opacity: 0.08
+                color: 0x4f7eff, wireframe: true, transparent: true, opacity: 0.06 
             });
             const sphere = new THREE.Mesh(geometry, material);
             scene.add(sphere);
 
-            // B. Particles
-            const particlesGeometry = new THREE.BufferGeometry();
-            const particlesCount = 800;
-            const posArray = new Float32Array(particlesCount * 3);
-
-            for(let i = 0; i < particlesCount * 3; i++) {
-                posArray[i] = (Math.random() - 0.5) * 90; 
-            }
-
-            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            // Particles
+            const pGeo = new THREE.BufferGeometry();
+            const pCount = 900;
+            const pPos = new Float32Array(pCount * 3);
+            for(let i=0; i<pCount*3; i++) pPos[i] = (Math.random()-0.5)*100;
+            pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
             
-            const particlesMaterial = new THREE.PointsMaterial({
-                size: 0.12,
-                color: 0xffffff,
-                transparent: true,
-                opacity: 0.5,
-                blending: THREE.AdditiveBlending
+            const pMat = new THREE.PointsMaterial({
+                size: 0.15, color: 0xffffff, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending
+            });
+            const particles = new THREE.Points(pGeo, pMat);
+            scene.add(particles);
+
+            // Interaction
+            let mouseX=0, mouseY=0;
+            document.addEventListener('mousemove', (e) => {
+                mouseX = (e.clientX - window.innerWidth/2) * 0.05;
+                mouseY = (e.clientY - window.innerHeight/2) * 0.05;
             });
 
-            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
-            scene.add(particlesMesh);
-
-            // --- Lighting ---
-            const ambientLight = new THREE.AmbientLight(0x404040, 2);
-            scene.add(ambientLight);
-            const pointLight = new THREE.PointLight(0x4f7eff, 2, 100);
-            pointLight.position.set(10, 10, 10);
-            scene.add(pointLight);
-
-            // --- Interactions ---
-            let mouseX = 0, mouseY = 0;
-            const windowHalfX = window.innerWidth / 2;
-            const windowHalfY = window.innerHeight / 2;
-
-            document.addEventListener('mousemove', (event) => {
-                mouseX = (event.clientX - windowHalfX);
-                mouseY = (event.clientY - windowHalfY);
-            });
-
-            window.addEventListener('resize', () => {
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-            });
-
-            // --- Animation Loop ---
             const clock = new THREE.Clock();
             const animate = () => {
                 requestAnimationFrame(animate);
-                const elapsedTime = clock.getElapsedTime();
-
-                // Rotation
-                sphere.rotation.y += 0.002;
-                sphere.rotation.x += 0.001;
-                particlesMesh.rotation.y = -elapsedTime * 0.05;
-
-                // Parallax
-                const targetX = mouseX * 0.001;
-                const targetY = mouseY * 0.001;
-                sphere.rotation.y += 0.05 * (targetX - sphere.rotation.y);
-                sphere.rotation.x += 0.05 * (targetY - sphere.rotation.x);
+                const t = clock.getElapsedTime();
                 
-                // Floating
-                particlesMesh.position.y = Math.sin(elapsedTime * 0.5) * 0.5;
+                sphere.rotation.y += 0.001;
+                sphere.rotation.x = Math.sin(t*0.2) * 0.1;
+                
+                particles.rotation.y = -t * 0.02;
+                particles.position.y = Math.sin(t*0.3)*0.5;
+
+                // Parallax smoothing
+                sphere.rotation.y += 0.01 * (mouseX * 0.01 - sphere.rotation.y);
+                sphere.rotation.x += 0.01 * (mouseY * 0.01 - sphere.rotation.x);
 
                 renderer.render(scene, camera);
             };
             animate();
+            
+            // Resizing
+            window.addEventListener('resize', () => {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                camera.aspect = window.innerWidth/window.innerHeight;
+                camera.updateProjectionMatrix();
+            });
         };
 
-        /* --- 2. Form & UI Logic --- */
+        /* --- 3. UI LOGIC (Accordion, Glow, Form) --- */
         const initUI = () => {
-            // Slider Logic
-            const slider = document.getElementById('profit-share');
-            const output = document.getElementById('profit-value');
-            if(slider && output) {
-                slider.addEventListener('input', function() {
-                    output.innerHTML = this.value + "%";
-                });
-            }
+            
+            // MOUSE GLOW FOLLOWER
+            const glow = document.getElementById('cursor-glow');
+            document.addEventListener('mousemove', (e) => {
+                glow.style.left = e.clientX + 'px';
+                glow.style.top = e.clientY + 'px';
+            });
 
-            // Button Scroll & Reveal
-            const btn = document.getElementById('register-btn');
-            const formSection = document.getElementById('register');
-            if(btn && formSection) {
-                btn.addEventListener('click', () => {
-                    formSection.style.display = 'flex';
-                    formSection.scrollIntoView({ behavior: 'smooth' });
+            // ACCORDION LOGIC
+            const accordions = document.querySelectorAll('.accordion-header');
+            accordions.forEach(acc => {
+                acc.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    const panel = this.nextElementSibling;
+                    if (panel.style.maxHeight) {
+                        panel.style.maxHeight = null;
+                    } else {
+                        panel.style.maxHeight = panel.scrollHeight + "px";
+                    }
                 });
-            }
+            });
 
-            // Dynamic Track Explanation
+            // TRACK INFO LOGIC
             const trackSelect = document.getElementById('track');
-            const trackInfoBox = document.getElementById('track-info-box');
-
-            const trackDescriptions = {
+            const trackInfo = document.getElementById('track-info-box');
+            const descriptions = {
                 "n8n Automation": "Designing automated workflows that connect apps, reduce manual work, and solve operational problems.",
                 "YouTube Content": "Creating, publishing, and growing content channels around education, entertainment, or information.",
                 "Digital Product Sales": "Creating and selling downloadable or online products such as templates, guides, tools, or media."
             };
 
-            if(trackSelect && trackInfoBox) {
+            if(trackSelect) {
                 trackSelect.addEventListener('change', function() {
-                    const selected = this.value;
-                    const desc = trackDescriptions[selected];
-                    
-                    if(desc) {
-                        trackInfoBox.style.display = "block";
-                        trackInfoBox.textContent = desc;
+                    if(descriptions[this.value]) {
+                        trackInfo.style.display = 'block';
+                        trackInfo.textContent = descriptions[this.value];
+                    }
+                });
+            }
+
+            // LIVE VALIDATION
+            const inputs = document.querySelectorAll('input[required], select[required]');
+            inputs.forEach(input => {
+                input.addEventListener('input', () => {
+                    if(input.checkValidity()) {
+                        input.classList.add('valid');
+                        input.classList.remove('invalid');
                     } else {
-                        trackInfoBox.style.display = "none";
+                        input.classList.add('invalid');
+                        input.classList.remove('valid');
                     }
                 });
-            }
+            });
 
-            // Formspree AJAX
+            // SLIDER & REVEAL
+            const slider = document.getElementById('profit-share');
+            const output = document.getElementById('profit-value');
+            slider.oninput = function() { output.innerHTML = this.value + "%"; };
+
+            document.getElementById('register-btn').addEventListener('click', () => {
+                const regSection = document.getElementById('register');
+                regSection.style.display = 'flex';
+                regSection.scrollIntoView({ behavior: 'smooth' });
+            });
+
+            // FORMSPREE
             const form = document.getElementById('launchForm');
-            const statusMsg = document.getElementById('form-status');
-
-            if(form) {
-                form.addEventListener('submit', async function(event) {
-                    event.preventDefault(); 
-                    const submitBtn = form.querySelector('.submit-button');
-                    const originalBtnText = submitBtn.innerText;
-                    
-                    submitBtn.innerText = "Transmitting...";
-                    submitBtn.disabled = true;
-                    statusMsg.innerText = "";
-                    statusMsg.className = "status-message";
-
-                    const data = new FormData(event.target);
-
-                    try {
-                        const response = await fetch(event.target.action, {
-                            method: form.method,
-                            body: data,
-                            headers: { 'Accept': 'application/json' }
-                        });
-
-                        if (response.ok) {
-                            statusMsg.innerText = "Registration Confirmed. Protocol Initiated.";
-                            statusMsg.classList.add("success");
-                            form.reset();
-                            if(output) output.innerHTML = "10%";
-                            trackInfoBox.style.display = "none"; // Hide info box
-                            submitBtn.innerText = "Sent";
-                        } else {
-                            const errorData = await response.json();
-                            if (Object.hasOwn(errorData, 'errors')) {
-                                statusMsg.innerText = errorData["errors"].map(e => e["message"]).join(", ");
-                            } else {
-                                statusMsg.innerText = "Transmission failed. Verify network.";
-                            }
-                            statusMsg.classList.add("error");
-                            submitBtn.innerText = originalBtnText;
-                            submitBtn.disabled = false;
-                        }
-                    } catch (error) {
-                        statusMsg.innerText = "Connection Error. Please retry.";
-                        statusMsg.classList.add("error");
-                        submitBtn.innerText = originalBtnText;
-                        submitBtn.disabled = false;
+            const status = document.getElementById('form-status');
+            
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = form.querySelector('.submit-button');
+                const originalText = btn.innerText;
+                
+                btn.innerText = "Processing Data...";
+                btn.disabled = true;
+                status.innerText = "";
+                
+                try {
+                    const res = await fetch(e.target.action, {
+                        method: form.method, body: new FormData(e.target),
+                        headers: {'Accept': 'application/json'}
+                    });
+                    if(res.ok) {
+                        status.innerText = "Protocol Successful. Welcome to LaunchPad.";
+                        status.style.color = "#4ade80";
+                        form.reset();
+                        output.innerHTML = "10%";
+                        trackInfo.style.display = 'none';
+                        btn.innerText = "Sent";
+                    } else {
+                        status.innerText = "Transmission Failed.";
+                        status.style.color = "#f87171";
+                        btn.disabled = false;
+                        btn.innerText = originalText;
                     }
-                });
-            }
+                } catch {
+                    status.innerText = "Network Error.";
+                    status.style.color = "#f87171";
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                }
+            });
         };
 
-        // Initialize
+        // Init All
         document.addEventListener('DOMContentLoaded', () => {
             initScene();
             initUI();
         });
-    </script>
-    <script>
-        // Fallback for particles if module fails (rare but safe)
     </script>
 </body>
 </html>
