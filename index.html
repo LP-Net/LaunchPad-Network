@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaunchPad Network | Launch. Build. Grow.</title>
+    <meta name="description" content="Launch skills. Build income. Grow steadily. Resources for independent operators.">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- 3D Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <!-- Main Overlay Content -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="glass-panel hero-content">
+                <h1 class="brand-name">LaunchPad Network</h1>
+                <p class="tagline">Launch skills. Build income. Grow steadily.</p>
+                <div class="separator"></div>
+                <p class="description">
+                    Access high-leverage resources and strategic guidance. 
+                    We provide the infrastructure; you provide the drive. 
+                    Operate independently within a structured ecosystem.
+                </p>
+                <a href="#register" class="cta-button">Initialize Registration</a>
+            </div>
+        </section>
+
+        <!-- Registration Section -->
+        <section id="register" class="registration">
+            <div class="glass-panel form-container">
+                <h2>Operator Registration</h2>
+                <p class="form-intro">Configure your track and confirm terms.</p>
+                
+                <form id="launchForm" action="https://formspree.io/f/xeejwrgz" method="POST">
+                    
+                    <!-- Identity -->
+                    <div class="input-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" required placeholder="Enter your legal name">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" required placeholder="name@example.com">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="whatsapp">WhatsApp / Mobile</label>
+                        <input type="tel" id="whatsapp" name="whatsapp" required placeholder="+1 (555) 000-0000">
+                    </div>
+
+                    <!-- Track Selection -->
+                    <div class="input-group">
+                        <label for="track">Select Track</label>
+                        <div class="select-wrapper">
+                            <select id="track" name="track" required>
+                                <option value="" disabled selected>Choose your pathway...</option>
+                                <option value="n8n Automation">n8n Automation</option>
+                                <option value="YouTube Content">YouTube Content</option>
+                                <option value="Digital Product Sales">Digital Product Sales</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Profit Share Slider -->
+                    <div class="input-group">
+                        <label for="profit-share">Your Agreed Profit Share (%)</label>
+                        <div class="range-container">
+                            <input type="range" id="profit-share" name="profit_share" min="10" max="50" step="1" value="10">
+                            <span id="profit-value">10%</span>
+                        </div>
+                    </div>
+
+                    <!-- Agreement -->
+                    <div class="input-group">
+                        <label for="signature">Digital Signature</label>
+                        <input type="text" id="signature" name="signature" required placeholder="Type full name to sign">
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="agreement" name="agreement" required>
+                        <label for="agreement">
+                            I confirm that I understand this program provides only resources and guidance. 
+                            I operate independently, take responsibility for my actions, and agree to the 
+                            stated profit share from profit only.
+                        </label>
+                    </div>
+
+                    <!-- Submit -->
+                    <button type="submit" class="submit-button">Confirm & Launch</button>
+                    
+                    <!-- Status Messages -->
+                    <p id="form-status" class="status-message"></p>
+                </form>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2025 LaunchPad Network. Independent Operations.</p>
+        </footer>
+    </main>
+
+    <!-- Scripts (ES Module for Three.js) -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
