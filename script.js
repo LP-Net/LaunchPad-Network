@@ -11,7 +11,6 @@ const initScene = () => {
     
     // Scene Setup
     const scene = new THREE.Scene();
-    // Add subtle fog for depth
     scene.fog = new THREE.FogExp2(0x050505, 0.002);
 
     // Camera
@@ -21,7 +20,7 @@ const initScene = () => {
     // Renderer
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Optimize for mobile
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
 
     // --- Geometry: Abstract Floating Network ---
@@ -37,19 +36,17 @@ const initScene = () => {
     const sphere = new THREE.Mesh(geometry, material);
     scene.add(sphere);
 
-    // 2. Particle System (Stars/Nodes)
+    // 2. Particle System
     const particlesGeometry = new THREE.BufferGeometry();
     const particlesCount = 700;
     const posArray = new Float32Array(particlesCount * 3);
 
     for(let i = 0; i < particlesCount * 3; i++) {
-        // Spread particles in a wide area
         posArray[i] = (Math.random() - 0.5) * 80; 
     }
 
     particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
     
-    // Create a circular texture programmatically for particles
     const spriteConfig = new THREE.PointsMaterial({
         size: 0.15,
         color: 0xffffff,
@@ -62,14 +59,14 @@ const initScene = () => {
     scene.add(particlesMesh);
 
     // --- Lighting ---
-    const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft white light
+    const ambientLight = new THREE.AmbientLight(0x404040, 2);
     scene.add(ambientLight);
 
     const pointLight = new THREE.PointLight(0x4f7eff, 2, 100);
     pointLight.position.set(10, 10, 10);
     scene.add(pointLight);
 
-    // --- Interaction Variables ---
+    // --- Interaction ---
     let mouseX = 0;
     let mouseY = 0;
     let targetX = 0;
@@ -77,13 +74,11 @@ const initScene = () => {
     const windowHalfX = window.innerWidth / 2;
     const windowHalfY = window.innerHeight / 2;
 
-    // Mouse Move Event for Parallax
     document.addEventListener('mousemove', (event) => {
         mouseX = (event.clientX - windowHalfX);
         mouseY = (event.clientY - windowHalfY);
     });
 
-    // Handle Window Resize
     window.addEventListener('resize', () => {
         const width = window.innerWidth;
         const height = window.innerHeight;
@@ -92,29 +87,25 @@ const initScene = () => {
         camera.updateProjectionMatrix();
     });
 
-    // --- Animation Loop ---
+    // --- Animation ---
     const clock = new THREE.Clock();
 
     const animate = () => {
         requestAnimationFrame(animate);
         const elapsedTime = clock.getElapsedTime();
 
-        // Rotate central object
         sphere.rotation.y += 0.002;
         sphere.rotation.x += 0.001;
 
-        // Rotate particle field slowly
         particlesMesh.rotation.y = -elapsedTime * 0.05;
         particlesMesh.rotation.x = elapsedTime * 0.01;
 
-        // Smooth Parallax
         targetX = mouseX * 0.001;
         targetY = mouseY * 0.001;
 
         sphere.rotation.y += 0.05 * (targetX - sphere.rotation.y);
         sphere.rotation.x += 0.05 * (targetY - sphere.rotation.x);
         
-        // Gentle float effect on particles
         particlesMesh.position.y = Math.sin(elapsedTime * 0.5) * 0.5;
 
         renderer.render(scene, camera);
@@ -130,9 +121,10 @@ const initForm = () => {
     const output = document.getElementById('profit-value');
 
     if(slider && output) {
-        slider.oninput = function() {
+        // Event listener to update text dynamically when user slides
+        slider.addEventListener('input', function() {
             output.innerHTML = this.value + "%";
-        }
+        });
     }
 
     // AJAX Submission
@@ -141,12 +133,11 @@ const initForm = () => {
 
     if(form) {
         form.addEventListener('submit', async function(event) {
-            event.preventDefault(); // Stop standard redirect
+            event.preventDefault(); 
             
             const submitBtn = form.querySelector('.submit-button');
             const originalBtnText = submitBtn.innerText;
             
-            // UI Loading State
             submitBtn.innerText = "Transmitting...";
             submitBtn.disabled = true;
             statusMsg.innerText = "";
@@ -168,7 +159,7 @@ const initForm = () => {
                     statusMsg.classList.add("success");
                     form.reset();
                     // Reset slider display
-                    output.innerHTML = "10%";
+                    if(output) output.innerHTML = "10%";
                     submitBtn.innerText = "Sent";
                 } else {
                     const errorData = await response.json();
@@ -191,7 +182,6 @@ const initForm = () => {
     }
 };
 
-// Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     initScene();
     initForm();
